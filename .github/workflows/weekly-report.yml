@@ -30,8 +30,9 @@ jobs:
       - name: Send weekly report
         env:
           COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+          COMPOSIO_USER_ID: ${{ secrets.COMPOSIO_USER_ID }}  # optional — auto-discovered if not set
           SHEET_ID: ${{ secrets.SHEET_ID }}
           EMPLOYEE_TABS: ${{ secrets.EMPLOYEE_TABS }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
           CC_EMAILS: ${{ secrets.CC_EMAILS }}
-        run: python scripts/generate_report.py
+        run: python -m scripts.generate_report
