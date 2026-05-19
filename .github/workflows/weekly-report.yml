@@ -1,0 +1,37 @@
+name: weekly-report
+
+on:
+  schedule:
+    # Sunday 05:00 UTC = Sunday 08:00 Israel (IST = UTC+3)
+    - cron: '0 5 * * 0'
+  workflow_dispatch:  # allow manual runs from the GitHub UI
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps for WeasyPrint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev
+
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install composio
+
+      - name: Send weekly report
+        env:
+          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+          SHEET_ID: ${{ secrets.SHEET_ID }}
+          EMPLOYEE_TABS: ${{ secrets.EMPLOYEE_TABS }}
+          RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          CC_EMAILS: ${{ secrets.CC_EMAILS }}
+        run: python scripts/generate_report.py
