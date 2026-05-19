@@ -1,10 +1,7 @@
-"""Tests for scripts/renderer.py — format helpers, template context, HTML/PDF output."""
+"""Tests for scripts/renderer.py — format helpers, template context, HTML output."""
 from __future__ import annotations
 
-import importlib
 from datetime import date, datetime, timedelta
-
-import pytest
 
 from scripts.renderer import (
     build_template_context,
@@ -13,7 +10,6 @@ from scripts.renderer import (
     format_duration,
     format_pct,
     render_email_html,
-    render_pdf_bytes,
 )
 
 
@@ -81,7 +77,7 @@ def test_build_template_context_shape(sample_sheet_data, default_config):
     assert "generated_at" in ctx
 
 
-# ---------- D. render_email_html / render_pdf_bytes ----------
+# ---------- D. render_email_html ----------
 
 
 def test_render_email_html(sample_sheet_data, default_config):
@@ -99,23 +95,3 @@ def test_render_email_html(sample_sheet_data, default_config):
     # Anomalies should appear
     assert "מידע חסר" in html
     assert "פעולות ארוכות" in html
-
-
-def _weasyprint_available() -> bool:
-    try:
-        importlib.import_module("weasyprint")
-        return True
-    except Exception:
-        return False
-
-
-@pytest.mark.skipif(not _weasyprint_available(), reason="WeasyPrint not available")
-def test_render_pdf_bytes_smoke(sample_sheet_data, default_config):
-    from scripts.sheets_reader import normalize_workbook
-    from scripts.analyzer import build_report
-    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
-    report = build_report(df, date(2026, 4, 19), default_config)
-    pdf = render_pdf_bytes(report, default_config, datetime(2026, 4, 19, 8, 0))
-    assert isinstance(pdf, bytes)
-    assert pdf[:5] == b"%PDF-"
-    assert len(pdf) > 1000

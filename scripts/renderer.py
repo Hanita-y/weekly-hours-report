@@ -1,7 +1,7 @@
-"""Render the metrics dict into HTML and PDF outputs."""
+"""Render the metrics dict into HTML output for the email body."""
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -76,26 +76,6 @@ def _per_client_rows(per_client: dict[str, dict[str, timedelta]]) -> list[list[s
             f'<span class="num">{pct:.0f}%</span>',
         ])
     return rows
-
-
-def _all_tasks_by_employee_rows(report: dict[str, Any]) -> dict[str, list[list[str]]]:
-    """Build per-employee table rows for the PDF, using the full per-employee task list."""
-    by_emp: dict[str, list[list[str]]] = {}
-    for emp, tasks in report.get("all_tasks_by_employee", {}).items():
-        rows: list[list[str]] = []
-        for task in tasks:
-            from_str = task["from_time"].strftime("%H:%M") if task["from_time"] is not None else ""
-            to_str = task["to_time"].strftime("%H:%M") if task["to_time"] is not None else ""
-            rows.append([
-                f'<span class="num">{format_date(task["date"])}</span>',
-                task["client"],
-                task["task"],
-                f'<span class="num">{from_str}</span>' if from_str else "",
-                f'<span class="num">{to_str}</span>' if to_str else "",
-                f'<span class="num">{format_duration(task["duration"])}</span>',
-            ])
-        by_emp[emp] = rows
-    return by_emp
 
 
 def _anomaly_lines(anomalies: dict[str, list[dict[str, Any]]]) -> dict[str, list[str]]:
@@ -179,7 +159,6 @@ def build_template_context(
         "tables": {
             "per_employee": _per_employee_rows(wow),
             "per_client": _per_client_rows(report["per_client"]),
-            "all_tasks_by_employee": _all_tasks_by_employee_rows(report),
         },
         "top_tasks": [
             {
@@ -208,15 +187,3 @@ def _env() -> Environment:
 def render_email_html(report: dict[str, Any], config: dict[str, Any], generated_at: datetime) -> str:
     ctx = build_template_context(report, config, generated_at)
     return _env().get_template("email.html").render(**ctx)
-
-
-def render_pdf_html(report: dict[str, Any], config: dict[str, Any], generated_at: datetime) -> str:
-    ctx = build_template_context(report, config, generated_at)
-    return _env().get_template("pdf.html").render(**ctx)
-
-
-def render_pdf_bytes(report: dict[str, Any], config: dict[str, Any], generated_at: datetime) -> bytes:
-    """Render the PDF version. WeasyPrint is imported lazily because it has heavy deps."""
-    from weasyprint import HTML
-    html = render_pdf_html(report, config, generated_at)
-    return HTML(string=html, base_url=str(TEMPLATES_DIR)).write_pdf()

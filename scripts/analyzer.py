@@ -271,7 +271,6 @@ def build_report(df: pd.DataFrame, today: date, config: dict[str, Any]) -> dict[
         "totals": total_hours_per_employee(this_week_df),
         "per_client": hours_per_client_per_employee(this_week_df),
         "top_tasks": top_tasks_by_duration(this_week_df, limit=10),
-        "all_tasks_by_employee": all_tasks_by_employee(this_week_df),
         "anomalies": {
             "missing_data": detect_missing_data(this_week_df),
             "missing_days": detect_missing_days(this_week_df, start, end, workdays, employees),

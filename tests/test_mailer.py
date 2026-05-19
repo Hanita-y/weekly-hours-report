@@ -1,9 +1,7 @@
 """Tests for mailer.py — Gmail via Composio Platform.
 
 Composio's GMAIL_SEND_EMAIL tool uses structured params (recipient_email/subject/
-body/is_html/cc) rather than a raw MIME envelope. PDF attachment is not
-implemented yet (Composio S3 upload step needed), so pdf_bytes/pdf_filename
-are accepted but ignored by `send_report`.
+body/is_html/cc) rather than a raw MIME envelope.
 """
 from __future__ import annotations
 
@@ -24,8 +22,6 @@ def test_send_report_calls_composio_with_structured_params():
         cc=["assistant@example.com"],
         subject="Test",
         html="<p>שלום</p>",
-        pdf_bytes=b"%PDF stub",
-        pdf_filename="weekly.pdf",
     )
     assert result["data"]["id"] == "msg123"
     args, _ = mock_client.execute_tool.call_args
@@ -44,7 +40,7 @@ def test_send_report_omits_cc_when_empty():
     send_report(
         composio_client=mock_client,
         sender="me@x.com", recipient="boss@x.com", cc=[],
-        subject="S", html="b", pdf_bytes=b"", pdf_filename="x.pdf",
+        subject="S", html="b",
     )
     args, _ = mock_client.execute_tool.call_args
     params = args[1]
@@ -65,8 +61,6 @@ def test_send_report_retries_on_failure():
         cc=[],
         subject="Subject",
         html="<p>body</p>",
-        pdf_bytes=b"%PDF stub",
-        pdf_filename="weekly.pdf",
         max_retries=3,
     )
     assert result["data"]["id"] == "msg_after_retry"
@@ -84,8 +78,6 @@ def test_send_report_raises_after_max_retries():
             cc=[],
             subject="Subject",
             html="<p>body</p>",
-            pdf_bytes=b"%PDF stub",
-            pdf_filename="weekly.pdf",
             max_retries=2,
         )
     assert "permanent" in str(exc_info.value)

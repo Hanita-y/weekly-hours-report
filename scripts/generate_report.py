@@ -183,7 +183,7 @@ def main() -> int:
 
         from scripts.sheets_reader import fetch_workbook, normalize_workbook
         from scripts.analyzer import build_report
-        from scripts.renderer import render_email_html, render_pdf_bytes
+        from scripts.renderer import render_email_html
         from scripts.mailer import send_report
 
         tabs = fetch_workbook(
@@ -194,11 +194,9 @@ def main() -> int:
         df = normalize_workbook(tabs, config)
         report = build_report(df, today, config)
         html = render_email_html(report, config, now_local.replace(tzinfo=None))
-        pdf = render_pdf_bytes(report, config, now_local.replace(tzinfo=None))
 
         from scripts.renderer import _subject  # noqa: SLF001 — internal helper reuse
         subject = _subject(report, config)
-        filename = f"weekly-hours-{today.strftime('%Y-%m-%d')}.pdf"
 
         result = send_report(
             composio_client=composio,
@@ -207,8 +205,6 @@ def main() -> int:
             cc=config["email"].get("cc", []),
             subject=subject,
             html=html,
-            pdf_bytes=pdf,
-            pdf_filename=filename,
         )
         msg_id = (result.get("data") or {}).get("id") if isinstance(result, dict) else None
         log.info("Sent message id=%s", msg_id)
