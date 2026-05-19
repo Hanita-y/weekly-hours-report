@@ -194,6 +194,28 @@ def test_week_over_week(sample_sheet_data, default_config, reference_week, prev_
     assert aviv_delta["prev"] == timedelta(hours=28)
 
 
+from scripts.analyzer import all_tasks_by_employee
+
+
+def test_all_tasks_by_employee(sample_sheet_data, default_config, reference_week):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    week_df = filter_to_range(df, *reference_week)
+    grouped = all_tasks_by_employee(week_df)
+    assert set(grouped.keys()) == {"אופיר", "אביב"}
+    # אופיר's reference-week rows with valid duration: 9 rows (3 on 12.04, 3 on 13.04, 2 on 15.04, 1 on 16.04)
+    # The 14.04 row has missing duration and is excluded (it appears in detect_missing_data instead)
+    assert len(grouped["אופיר"]) == 9
+    # Sorted ascending by date
+    dates = [r["date"] for r in grouped["אופיר"]]
+    assert dates == sorted(dates)
+    # First row should be 12.04 with a from_time
+    assert grouped["אופיר"][0]["date"] == date(2026, 4, 12)
+    assert grouped["אופיר"][0]["from_time"] == time(9, 0)
+    # אביב has 4 rows in reference week
+    assert len(grouped["אביב"]) == 4
+
+
 from scripts.analyzer import build_report
 
 

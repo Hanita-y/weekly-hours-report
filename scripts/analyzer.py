@@ -65,6 +65,30 @@ def top_tasks_by_duration(df: pd.DataFrame, limit: int = 10) -> list[dict[str, A
     ]
 
 
+def all_tasks_by_employee(df: pd.DataFrame) -> dict[str, list[dict[str, Any]]]:
+    """For each employee, return their tasks sorted by date then from_time, asc.
+
+    Drops rows with missing duration (they appear in detect_missing_data instead).
+    Returns a dict {employee: [{date, client, task, from_time, to_time, duration}, ...]}.
+    """
+    valid = df.dropna(subset=["duration"])
+    result: dict[str, list[dict[str, Any]]] = {}
+    for emp, group in valid.groupby("employee"):
+        sorted_rows = group.sort_values(["date", "from_time"], na_position="last")
+        result[emp] = [
+            {
+                "date": row["date"],
+                "client": row["client"],
+                "task": row["task"],
+                "from_time": row["from_time"],
+                "to_time": row["to_time"],
+                "duration": row["duration"],
+            }
+            for _, row in sorted_rows.iterrows()
+        ]
+    return result
+
+
 def detect_missing_data(df: pd.DataFrame) -> list[dict[str, Any]]:
     """Return rows that have a valid date but missing time/duration fields."""
     issues_present = df[df["issues"].apply(lambda lst: bool(lst))]
@@ -247,6 +271,7 @@ def build_report(df: pd.DataFrame, today: date, config: dict[str, Any]) -> dict[
         "totals": total_hours_per_employee(this_week_df),
         "per_client": hours_per_client_per_employee(this_week_df),
         "top_tasks": top_tasks_by_duration(this_week_df, limit=10),
+        "all_tasks_by_employee": all_tasks_by_employee(this_week_df),
         "anomalies": {
             "missing_data": detect_missing_data(this_week_df),
             "missing_days": detect_missing_days(this_week_df, start, end, workdays, employees),

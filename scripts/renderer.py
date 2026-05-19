@@ -79,20 +79,22 @@ def _per_client_rows(per_client: dict[str, dict[str, timedelta]]) -> list[list[s
 
 
 def _all_tasks_by_employee_rows(report: dict[str, Any]) -> dict[str, list[list[str]]]:
-    """For PDF: full per-employee task list, sourced from report['top_tasks'] (v1 — limit 10).
-
-    Future: could come from a richer field. For now reuse top_tasks.
-    """
+    """Build per-employee table rows for the PDF, using the full per-employee task list."""
     by_emp: dict[str, list[list[str]]] = {}
-    for task in report.get("top_tasks", []):
-        by_emp.setdefault(task["employee"], []).append([
-            f'<span class="num">{format_date(task["date"])}</span>',
-            task["client"],
-            task["task"],
-            "",  # from_time placeholder
-            "",  # to_time placeholder
-            f'<span class="num">{format_duration(task["duration"])}</span>',
-        ])
+    for emp, tasks in report.get("all_tasks_by_employee", {}).items():
+        rows: list[list[str]] = []
+        for task in tasks:
+            from_str = task["from_time"].strftime("%H:%M") if task["from_time"] is not None else ""
+            to_str = task["to_time"].strftime("%H:%M") if task["to_time"] is not None else ""
+            rows.append([
+                f'<span class="num">{format_date(task["date"])}</span>',
+                task["client"],
+                task["task"],
+                f'<span class="num">{from_str}</span>' if from_str else "",
+                f'<span class="num">{to_str}</span>' if to_str else "",
+                f'<span class="num">{format_duration(task["duration"])}</span>',
+            ])
+        by_emp[emp] = rows
     return by_emp
 
 
