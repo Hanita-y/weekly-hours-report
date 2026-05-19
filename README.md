@@ -3,7 +3,7 @@
 [![Powered by Composio](https://img.shields.io/badge/Powered_by-Composio-blue?style=flat-square)](https://composio.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-סקיל ל-Claude Code שמייצר אוטומטית דוח שעות שבועי עברי ושולח אותו במייל כל ראשון בבוקר. הסקיל קורא Google Sheets שבו כל עובד מקבל טאב משלו, מסכם את השבוע האחרון, מזהה חריגות (מידע חסר, ימים ללא דיווח, פעולות ארוכות, דיווח נמוך/גבוה), ושולח Gmail עם גוף HTML מינימליסטי + PDF מצורף.
+סקיל ל-Claude Code שמייצר אוטומטית דוח שעות שבועי עברי ושולח אותו במייל כל ראשון בבוקר. הסקיל קורא Google Sheets שבו כל עובד מקבל טאב משלו, מסכם את השבוע האחרון, מזהה חריגות (מידע חסר, ימים ללא דיווח, פעולות ארוכות, דיווח נמוך/גבוה), ושולח Gmail עם גוף HTML מינימליסטי.
 
 > **דרישה חיונית: [Composio Platform](https://composio.dev)** — Composio מספק את שכבת ה-OAuth ל-Google Sheets + Gmail (Auth Configs מנוהלים). ה-cron השבועי רץ דרך **GitHub Actions** (לא דרך Composio) — ראי [docs/setup-guide-he.md](docs/setup-guide-he.md) למדריך מלא עם צילומי מסך.
 
@@ -71,7 +71,7 @@ weekly-hours-report/
 ├── config.example.json     # תבנית config
 ├── scripts/                # generate_report, sheets_reader, analyzer,
 │                           # renderer, mailer, setup
-├── templates/              # email.html, pdf.html, styles.css
+├── templates/              # email.html, styles.css
 ├── tests/                  # pytest suite
 ├── .github/workflows/
 │   ├── tests.yml           # CI לבדיקות
@@ -125,4 +125,3 @@ MIT — ראי [LICENSE](LICENSE).
 - [Composio Platform](https://composio.dev) — שכבת האינטגרציה ל-Google Sheets ו-Gmail
 - GitHub Actions — תשתית cron שבועית
 - Google Fonts — פונט [Assistant](https://fonts.google.com/specimen/Assistant)
-- [WeasyPrint](https://weasyprint.org/) — יצירת PDF

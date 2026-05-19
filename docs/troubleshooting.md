@@ -21,20 +21,6 @@ export COMPOSIO_API_KEY="..."
 
 החיבור פג או נמחק. כנסי ל-Composio Platform → Auth Configs → לחצי על Google Sheets → Connect Account ותחברי חשבון Google מחדש (עוברים שוב על מסך ההרשאות של Google).
 
-## ה-PDF נראה שבור (עברית הפוכה / פונט חסר)
-
-WeasyPrint דורש libcairo, libpango. ב-Mac:
-```bash
-brew install cairo pango gdk-pixbuf libffi
-```
-
-ב-Linux Ubuntu:
-```bash
-sudo apt-get install libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev
-```
-
-ב-GitHub Actions זה כבר מותקן אוטומטית דרך ה-workflow.
-
 ## "Quota exceeded" של Google Sheets
 
 קורה רק אם הטבלה ענקית (>50K שורות) או הרבה משתמשים על אותו project. בדרך כלל ה-skill לא מגיע למצב הזה.

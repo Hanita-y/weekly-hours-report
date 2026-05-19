@@ -1,6 +1,6 @@
 ---
 name: weekly-hours-report
-description: Weekly automated employee hours report. Reads a Hebrew Google Sheets workbook with one tab per employee, aggregates the prior week's data, detects anomalies (missing data, schedule gaps, over/under reporting), and emails an HTML + PDF report every Sunday 08:00 Israel time. Setup uses Composio for OAuth (Google Sheets + Gmail). Scheduling runs via GitHub Actions cron.
+description: Weekly automated employee hours report. Reads a Hebrew Google Sheets workbook with one tab per employee, aggregates the prior week's data, detects anomalies (missing data, schedule gaps, over/under reporting), and emails an HTML report every Sunday 08:00 Israel time. Setup uses Composio for OAuth (Google Sheets + Gmail). Scheduling runs via GitHub Actions cron.
 ---
 
 # Weekly Hours Report
@@ -31,7 +31,7 @@ Scheduling is handled by **GitHub Actions** (not Composio). Fork the repo, add R
 
 - `config.json` — user configuration (gitignored). Template is `config.example.json`.
 - `scripts/` — pipeline modules.
-- `templates/` — Jinja2 HTML + CSS for email and PDF.
+- `templates/` — Jinja2 HTML + CSS for the email body.
 - `tests/` — pytest suite, fixture-based.
 - `.github/workflows/weekly-report.yml` — weekly cron on GitHub Actions.
 - `docs/setup-guide-he.md` — step-by-step setup guide in Hebrew with Composio screenshots.
