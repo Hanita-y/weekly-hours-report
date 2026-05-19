@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
 
 body {
-  font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Assistant', 'Heebo', 'Rubik', 'Open Sans Hebrew', -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
   direction: rtl;
   text-align: right;
   color: #1a1a1a;
