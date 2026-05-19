@@ -173,3 +173,45 @@ def test_detect_schedule_gaps():
     assert len(gaps) == 1
     assert gaps[0]["gap_start"] == time(10, 0)
     assert gaps[0]["gap_end"] == time(11, 0)
+
+
+from scripts.analyzer import week_over_week
+
+
+def test_week_over_week(sample_sheet_data, default_config, reference_week, prev_reference_week):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    this_week = filter_to_range(df, *reference_week)
+    prev_week = filter_to_range(df, *prev_reference_week)
+    wow = week_over_week(this_week, prev_week)
+    assert wow["this_week"]["total_hours"] > timedelta(0)
+    assert wow["prev_week"]["total_hours"] > timedelta(0)
+    assert "hours_pct" in wow["delta"]
+    assert "per_employee_delta" in wow
+    aviv_delta = next(e for e in wow["per_employee_delta"] if e["name"] == "אביב")
+    # אביב this week = 32h, prev week = 28h (4 × 7h) → +14.3%
+    assert aviv_delta["this"] == timedelta(hours=32)
+    assert aviv_delta["prev"] == timedelta(hours=28)
+
+
+from scripts.analyzer import build_report
+
+
+def test_build_report_shape(sample_sheet_data, default_config):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    today = date(2026, 4, 19)  # Sunday after the reference week
+    report = build_report(df, today, default_config)
+    for key in [
+        "date_range", "prev_range", "totals", "per_client", "top_tasks",
+        "anomalies", "wow",
+    ]:
+        assert key in report, f"missing key: {key}"
+    assert report["date_range"]["start"] == date(2026, 4, 12)
+    assert report["date_range"]["end"] == date(2026, 4, 18)
+    assert "missing_data" in report["anomalies"]
+    assert "missing_days" in report["anomalies"]
+    assert "long_tasks" in report["anomalies"]
+    assert "schedule_gaps" in report["anomalies"]
+    assert "under_reporting" in report["anomalies"]
+    assert "over_reporting" in report["anomalies"]

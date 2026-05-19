@@ -172,3 +172,89 @@ def detect_schedule_gaps(df: pd.DataFrame, threshold_minutes: int) -> list[dict[
                     })
             prev_end = row["to_time"]
     return gaps
+
+
+def _delta_pct(current: timedelta, previous: timedelta) -> float | None:
+    if previous.total_seconds() == 0:
+        return None
+    return round(((current.total_seconds() - previous.total_seconds()) / previous.total_seconds()) * 100, 1)
+
+
+def week_over_week(this_week_df: pd.DataFrame, prev_week_df: pd.DataFrame) -> dict[str, Any]:
+    """Compare two week DataFrames. Returns aggregate stats and per-employee deltas."""
+    this_totals = total_hours_per_employee(this_week_df)
+    prev_totals = total_hours_per_employee(prev_week_df)
+
+    this_total_hours = sum(this_totals.values(), timedelta(0))
+    prev_total_hours = sum(prev_totals.values(), timedelta(0))
+
+    all_employees = set(this_totals) | set(prev_totals)
+    per_employee_delta = []
+    for emp in sorted(all_employees):
+        this_val = this_totals.get(emp, timedelta(0))
+        prev_val = prev_totals.get(emp, timedelta(0))
+        per_employee_delta.append({
+            "name": emp,
+            "this": this_val,
+            "prev": prev_val,
+            "delta_pct": _delta_pct(this_val, prev_val),
+        })
+
+    return {
+        "this_week": {
+            "total_hours": this_total_hours,
+            "total_tasks": int(this_week_df.dropna(subset=["duration"]).shape[0]),
+            "active_employees": len([t for t in this_totals.values() if t > timedelta(0)]),
+        },
+        "prev_week": {
+            "total_hours": prev_total_hours,
+            "total_tasks": int(prev_week_df.dropna(subset=["duration"]).shape[0]),
+            "active_employees": len([t for t in prev_totals.values() if t > timedelta(0)]),
+        },
+        "delta": {
+            "hours_pct": _delta_pct(this_total_hours, prev_total_hours),
+            "tasks_pct": _delta_pct(
+                timedelta(seconds=int(this_week_df.dropna(subset=["duration"]).shape[0])),
+                timedelta(seconds=int(prev_week_df.dropna(subset=["duration"]).shape[0])),
+            ),
+        },
+        "per_employee_delta": per_employee_delta,
+    }
+
+
+def build_report(df: pd.DataFrame, today: date, config: dict[str, Any]) -> dict[str, Any]:
+    """Top-level analyzer entry — compute the full metrics dict consumed by renderer."""
+    start, end = compute_week_range(today)
+    prev_start, prev_end = start - timedelta(days=7), start - timedelta(days=1)
+
+    this_week_df = filter_to_range(df, start, end)
+    prev_week_df = filter_to_range(df, prev_start, prev_end)
+
+    thresholds = config["anomaly_thresholds"]
+    workdays = config["workdays"]
+    employees = config["sheet"]["employee_tabs"]
+
+    under_reporting, over_reporting = detect_under_over_reporting(
+        this_week_df,
+        thresholds["underreporting_daily_hours"],
+        thresholds["overreporting_daily_hours"],
+        workdays,
+    )
+
+    return {
+        "date_range": {"start": start, "end": end},
+        "prev_range": {"start": prev_start, "end": prev_end},
+        "totals": total_hours_per_employee(this_week_df),
+        "per_client": hours_per_client_per_employee(this_week_df),
+        "top_tasks": top_tasks_by_duration(this_week_df, limit=10),
+        "anomalies": {
+            "missing_data": detect_missing_data(this_week_df),
+            "missing_days": detect_missing_days(this_week_df, start, end, workdays, employees),
+            "long_tasks": detect_long_tasks(this_week_df, thresholds["long_task_hours"]),
+            "schedule_gaps": detect_schedule_gaps(this_week_df, thresholds["schedule_gap_minutes"]),
+            "under_reporting": under_reporting,
+            "over_reporting": over_reporting,
+        },
+        "wow": week_over_week(this_week_df, prev_week_df),
+        "branding": config.get("branding", {}),
+    }
