@@ -1,32 +1,146 @@
 # מדריך התקנה — Weekly Hours Report
 
-מדריך צעד-אחר-צעד למשתתפי הסדנא. אם משהו לא ברור, ראה [troubleshooting.md](troubleshooting.md).
+מדריך צעד-אחר-צעד למשתתפי הסדנא. אם משהו לא ברור, ראי [troubleshooting.md](troubleshooting.md).
 
-## 1. הרשמה ל-Rube
+המדריך מחולק לשניים:
 
-- כנסי ל-[rube.app](https://rube.app) והרשמי (חינם).
-- אחרי ההרשמה, גשי ל-Dashboard ולחצי על "API Keys".
-- צרי API key חדש בשם "Claude Code Workshop".
-- העתיקי את ה-API key — תצטרכי אותו בהמשך.
+- **חלק א'** — הקמת Composio Platform: יצירת Auth Configs ל-Google Sheets ול-Gmail וחיבור חשבון Google אמיתי.
+- **חלק ב'** — הקמת הסקיל המקומי + הפעלת ה-cron השבועי דרך GitHub Actions.
 
-(הוסיפו screenshot: `screenshots/01-rube-signup.png`)
+---
 
-## 2. חיבור Rube ל-Claude Code
+## חלק א' — הקמת Composio Platform
 
-עקבי אחרי המדריך הרשמי של Rube ב-rube.app/docs/claude-code. בסוף תוודאי ש-Claude מזהה את Rube:
+### 1. הרשמה ל-composio.dev
 
-הקלידי בשיחה ל-Claude: `list my Rube connections`. אם Claude מחזיר רשימה (גם אם ריקה) — זה עובד.
+היכנסי ל-[composio.dev](https://composio.dev) והרשמי (חינם). אפשר להתחבר עם Google.
 
-(הוסיפו screenshot: `screenshots/02-claude-rube-connected.png`)
+![](../screenshots/01-composio-login.png)
 
-## 3. הורדת הסקיל
+### 2. מסך Getting Started
+
+אחרי ההרשמה תגיעי למסך Getting Started. כאן יוצרים את ה-API key בהמשך, אבל קודם נחבר את ה-Toolkits.
+
+![](../screenshots/02-composio-getting-started.png)
+
+### 3. יצירה או בחירה של Project
+
+ב-Composio כל סביבת עבודה היא Project. אם זה החשבון הראשון שלך כבר יש Project ברירת מחדל — אפשר להישאר בו. אחרת לחצי **+ New Project** ותני שם (למשל `weekly-hours-report`).
+
+![](../screenshots/03-composio-projects.png)
+
+### 4. דפדוף ב-Toolkits
+
+מהסיידבר השמאלי לכי ל-**Toolkits**. נחפש שניים: **Google Sheets** ו-**Gmail**.
+
+![](../screenshots/04-toolkits-grid.png)
+
+### 5. הוספת Google Sheets ל-Project
+
+לחצי על Google Sheets ואז על **Add to Project** מימין.
+
+![](../screenshots/05-googlesheets-toolkit.png)
+
+### 6. שם ה-Auth Config
+
+יפתח חלון שמבקש שם. אפשר להשאיר את ברירת המחדל או לשנות (למשל `Google Sheets - Weekly Report`). לחצי **Next**.
+
+![](../screenshots/06-googlesheets-config-name.png)
+
+### 7. בחירת Auth Method
+
+- **Auth Method:** OAuth 2.0
+- **Auth Mode:** Composio Managed (זה הקל ביותר — Composio מנהלת את ה-OAuth credentials במקומך)
+- **Scopes:** סמני את ה-scopes הנדרשים (3 scopes ל-Google Sheets — קריאה, כתיבה, drive metadata)
+
+לחצי **Create Auth Config**.
+
+![](../screenshots/07-googlesheets-auth-method.png)
+
+### 8. Auth Config נוצר
+
+חזרי ל-Auth Configs בסיידבר ותראי את הרשומה החדשה של Google Sheets ברשימה.
+
+![](../screenshots/08-auth-configs-after-sheets.png)
+
+### 9. אותו תהליך עבור Gmail
+
+חזרי ל-Toolkits, חפשי Gmail ולחצי **Add to Project**.
+
+![](../screenshots/09-gmail-toolkit.png)
+
+### 10. שם ל-Gmail Auth Config
+
+שוב יבקשו שם. השאירי או שני (למשל `Gmail - Weekly Report`). **Next**.
+
+![](../screenshots/10-gmail-config-name.png)
+
+### 11. Auth Method ל-Gmail
+
+- **Auth Method:** OAuth 2.0
+- **Auth Mode:** Composio Managed
+- **Scopes:** 11 scopes ל-Gmail (לכל הפחות `gmail.send` ו-`gmail.compose`). סמני את כולם — בטוח יותר.
+
+לחצי **Create Auth Config**.
+
+![](../screenshots/11-gmail-auth-method.png)
+
+### 12. מציאת ה-API Keys
+
+עכשיו צריך לקבל API key. בסיידבר השמאלי לחצי על **API Keys**.
+
+![](../screenshots/12-sidebar-api-keys.png)
+
+### 13. רשימת ה-API Keys
+
+זה המסך שמציג את כל ה-API keys. אם זו פעם ראשונה תהיה רשימה ריקה. לחצי על הכפתור ליצירת מפתח חדש.
+
+![](../screenshots/13-api-keys-list.png)
+
+### 14. יצירת API key חדש
+
+תני למפתח שם (למשל `Claude Code - Weekly Report`). לחצי **Create**.
+
+![](../screenshots/14-create-api-key-modal.png)
+
+> **חשוב!** המפתח מוצג רק פעם אחת. העתיקי אותו עכשיו לאיזה place-holder בטוח (1Password, Apple Notes וכו'). אחר כך תוכלי לראות רק את 4 התווים האחרונים שלו.
+
+### 15. חיבור חשבון Google ל-Auth Config של Google Sheets
+
+עכשיו צריך לחבר חשבון Google אמיתי לכל אחד מה-Auth Configs. חזרי ל-Auth Configs, לחצי על Google Sheets, ובפאנל הימני שיפתח לחצי **Connect Account**.
+
+![](../screenshots/15-connect-account-panel.png)
+
+### 16. מתן User ID לחיבור
+
+יפתח חלון שמבקש User ID. זה מזהה פנימי של Composio שמשמש לזהות את ה-connection. אפשר להזין כל מחרוזת — מומלץ משהו פשוט כמו `default` או המייל שלך. לחצי **Connect**.
+
+![](../screenshots/16-connect-account-modal.png)
+
+יפתח חלון Google OAuth של אמת — בחרי את החשבון, אשרי הרשאות, ותחזרי ל-Composio.
+
+חזרי על השלב הזה (15 + 16) גם ל-Gmail.
+
+### 17. וידוא — שני החיבורים מחוברים
+
+חזרי ל-Auth Configs. צריך לראות לפחות שתי שורות (Gmail + Google Sheets), בכל אחת `1 connection` ו-`Enabled`.
+
+![](../screenshots/17-auth-configs-connected.png)
+
+> אם רואים `0 connections` בשורה כלשהי — חזרי לשלב 15.
+
+---
+
+## חלק ב' — התקנת הסקיל המקומי
+
+### 18. הורדת הסקיל
 
 ```bash
 git clone https://github.com/Hanita-y/weekly-hours-report.git ~/.claude/skills/weekly-hours-report
 cd ~/.claude/skills/weekly-hours-report
 ```
 
-## 4. התקנת התלויות
+### 19. התקנת תלויות
 
 ```bash
 python -m venv .venv
@@ -34,15 +148,15 @@ source .venv/bin/activate   # ב-Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## 5. הגדרת ה-API key
+### 20. הגדרת ה-API key
 
 ```bash
-export COMPOSIO_API_KEY="הדבק כאן את המפתח שהעתקת בשלב 1"
+export COMPOSIO_API_KEY="המפתח שהעתקת בשלב 14"
 ```
 
-(ב-zsh/bash הוסיפי את השורה ל-`~/.zshrc` כדי שתישמר).
+(ב-zsh/bash הוסיפי את השורה ל-`~/.zshrc` כדי שתישמר בין sessions).
 
-## 6. הרצת ה-setup
+### 21. הרצת ה-setup
 
 ```bash
 python scripts/setup.py
@@ -51,27 +165,65 @@ python scripts/setup.py
 ה-script יבקש:
 
 - **Google Sheet ID** — מתוך ה-URL של הטבלה. הוא הקטע בין `/d/` ל-`/edit`.
-- **שמות טאבים** — בדיוק כמו שהם בטבלה, מופרדים בפסיק.
+- **שמות טאבים** — בדיוק כמו שהם בטבלה, מופרדים בפסיק (למשל `אופיר, אביב, נועה`).
 - **מייל יעד** — מי מקבל את הדוח.
-- **Cron** — מתי לשלוח. השאירי את הברירה (`0 8 * * 0`) לראשון 08:00.
+- **CC** — מיילים נוספים שיקבלו עותק (אופציונלי).
+- **Cron** — מתי לשלוח. השאירי את ברירת המחדל (`0 8 * * 0`) לראשון 08:00.
 
-חלון דפדפן יפתח פעמיים — פעם ל-Google Sheets ופעם ל-Gmail — לאישור הרשאות OAuth. אשרי בשני המקרים.
+ה-script ייצור `config.json` מקומי.
 
-(הוסיפו screenshot: `screenshots/03-oauth-flow.png`)
+### 22. שליחת דוח test ידני
 
-## 7. שליחת דוח test
+ה-setup ישאל אם לשלוח דוח test עכשיו. בחרי `y`. תוך 30 שניות אמור להגיע מייל לכתובת שהגדרת.
 
-בסיום ה-setup ה-script ישאל אם לשלוח test. בחרי `y`. תוך 30 שניות אמור להגיע מייל לכתובת שהגדרת. אם לא הגיע — ראי [troubleshooting.md](troubleshooting.md).
+אפשר תמיד להריץ ידנית:
 
-## 8. סיום
+```bash
+python scripts/generate_report.py
+```
 
-מעכשיו הדוח יישלח אוטומטית ראשון 08:00. אין צורך לעשות כלום — Rube יריץ את ה-script ב-sandbox שלה.
+---
+
+## חלק ג' — Cron שבועי דרך GitHub Actions
+
+הסקיל לא רץ על תשתית של Composio. כדי שהדוח יישלח אוטומטית כל שבוע, מפעילים את ה-workflow ב-GitHub Actions:
+
+### 23. Fork לריפו
+
+לכי ל-[github.com/Hanita-y/weekly-hours-report](https://github.com/Hanita-y/weekly-hours-report), לחצי **Fork** למעלה ימינה, צרי עותק תחת החשבון שלך.
+
+### 24. הוספת Repository Secrets
+
+בריפו ה-fork שלך לכי ל-**Settings → Secrets and variables → Actions → New repository secret**. הוסיפי:
+
+| שם ה-Secret | ערך |
+|---|---|
+| `COMPOSIO_API_KEY` | המפתח שהעתקת בשלב 14 |
+| `SHEET_ID` | ה-Spreadsheet ID של הטבלה |
+| `EMPLOYEE_TABS` | מחרוזת JSON, למשל `["אופיר","אביב","נועה"]` |
+| `RECIPIENT_EMAIL` | כתובת המייל ליעד |
+| `CC_EMAILS` | אופציונלי — מיילים מופרדים בפסיק (אם אין, אל תוסיפי את ה-secret הזה) |
+
+### 25. הפעלה ראשונה / בדיקה
+
+הקרון מוגדר ל-`0 5 * * 0` ב-UTC = ראשון 08:00 שעון ישראל. כדי לבדוק שהכל עובד בלי לחכות לראשון:
+
+- ב-GitHub לכי ל-**Actions → weekly-report → Run workflow**. זה יריץ את ה-workflow ידנית באותו רגע.
+- בדקי את הלוג — צריך לראות `Sent message id=...` בסוף.
+- המייל ייפול לתיבת הדואר תוך כמה שניות.
+
+### 26. סיום
+
+מעכשיו הדוח יישלח אוטומטית ראשון 08:00 שעון ישראל. אין צורך לעשות כלום.
+
+---
 
 ## להעביר את הסקיל למישהו אחר
 
-כל משתתף בסדנא צריך:
-1. חשבון Rube משלו
-2. גישה משלו לטבלה (או טבלה משלו)
-3. להריץ `setup.py` עם הפרטים שלו
+כל משתתפת בסדנא צריכה:
 
-ה-`config.json` הוא אישי ולא נכנס ל-Git, אז אין סכנת דליפת סודות.
+1. חשבון Composio משלה (חלק א')
+2. גישה משלה לטבלה (או טבלה משלה)
+3. Fork משלה לריפו + Repository Secrets משלה (חלק ג')
+
+ה-`config.json` הוא אישי ולא נכנס ל-Git, אז אין סכנת דליפת סודות בריפו הציבורי.
