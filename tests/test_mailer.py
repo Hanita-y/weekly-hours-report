@@ -1,4 +1,4 @@
-"""Tests for mailer.py — Gmail via Rube."""
+"""Tests for mailer.py — Gmail via Composio Platform."""
 from __future__ import annotations
 
 import base64
@@ -41,11 +41,11 @@ def test_build_mime_message_supports_cc():
     assert "Cc: assistant@example.com" in decoded
 
 
-def test_send_report_calls_rube():
+def test_send_report_calls_composio():
     mock_client = MagicMock()
     mock_client.execute_tool.return_value = {"id": "msg123", "labelIds": ["SENT"]}
     result = send_report(
-        rube_client=mock_client,
+        composio_client=mock_client,
         sender="me@example.com",
         recipient="boss@example.com",
         cc=[],
@@ -69,7 +69,7 @@ def test_send_report_retries_on_failure():
         {"id": "msg_after_retry"},
     ]
     result = send_report(
-        rube_client=mock_client,
+        composio_client=mock_client,
         sender="me@example.com",
         recipient="boss@example.com",
         cc=[],
@@ -88,7 +88,7 @@ def test_send_report_raises_after_max_retries():
     mock_client.execute_tool.side_effect = Exception("permanent")
     with pytest.raises(MailerError) as exc_info:
         send_report(
-            rube_client=mock_client,
+            composio_client=mock_client,
             sender="me@example.com",
             recipient="boss@example.com",
             cc=[],

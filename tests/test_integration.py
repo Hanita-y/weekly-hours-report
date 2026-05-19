@@ -3,22 +3,22 @@ from datetime import date, datetime
 from unittest.mock import MagicMock
 
 
-def test_full_pipeline_with_mock_rube(sample_sheet_data, default_config, tmp_path):
-    from scripts.sheets_reader import fetch_workbook_via_rube, normalize_workbook
+def test_full_pipeline_with_mock_composio(sample_sheet_data, default_config, tmp_path):
+    from scripts.sheets_reader import fetch_workbook, normalize_workbook
     from scripts.analyzer import build_report
     from scripts.renderer import render_email_html, render_pdf_bytes
 
-    mock_rube = MagicMock()
-    mock_rube.execute_tool.return_value = {
+    mock_composio = MagicMock()
+    mock_composio.execute_tool.return_value = {
         "valueRanges": [
             {"values": sample_sheet_data["tabs"]["אופיר"]},
             {"values": sample_sheet_data["tabs"]["אביב"]},
         ]
     }
-    tabs = fetch_workbook_via_rube(
+    tabs = fetch_workbook(
         default_config["sheet"]["spreadsheet_id"],
         default_config["sheet"]["employee_tabs"],
-        mock_rube,
+        mock_composio,
     )
     df = normalize_workbook(tabs, default_config)
     report = build_report(df, date(2026, 4, 19), default_config)

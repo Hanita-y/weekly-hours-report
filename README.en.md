@@ -1,11 +1,11 @@
 # Weekly Hours Report
 
-[![Powered by Rube](https://img.shields.io/badge/Powered_by-Rube-blue?style=flat-square)](https://rube.app)
+[![Powered by Composio](https://img.shields.io/badge/Powered_by-Composio-blue?style=flat-square)](https://composio.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-A Claude Code skill that emails a weekly Hebrew hours report from a Google Sheets workbook with one tab per employee. Runs every Sunday 08:00 (Israel time) via a Rube/Composio scheduled recipe.
+A Claude Code skill that emails a weekly Hebrew hours report from a Google Sheets workbook with one tab per employee. Runs every Sunday 08:00 (Israel time) via GitHub Actions cron, using the **Composio Platform** for Google Sheets + Gmail OAuth.
 
-> **Requires [Rube by Composio](https://rube.app).** Rube provides OAuth for Google Sheets + Gmail and the cron + sandbox that runs the pipeline. The skill will not function without it.
+> **Requires [Composio Platform](https://composio.dev).** Composio provides the OAuth layer (Auth Configs) for Google Sheets and Gmail. Scheduling runs on **GitHub Actions** — fork the repo, add Repository Secrets, and the weekly cron runs automatically.
 
 ## Quick start
 
@@ -18,7 +18,14 @@ export COMPOSIO_API_KEY=...
 python scripts/setup.py
 ```
 
-See [README.md](README.md) (Hebrew) for full documentation.
+To enable the weekly cron, fork the repo and add the following Repository Secrets:
+- `COMPOSIO_API_KEY`
+- `SHEET_ID`
+- `EMPLOYEE_TABS` (JSON array string, e.g. `["Ofir","Aviv"]`)
+- `RECIPIENT_EMAIL`
+- `CC_EMAILS` (optional, comma-separated)
+
+See [README.md](README.md) (Hebrew) for full documentation and [docs/setup-guide-he.md](docs/setup-guide-he.md) for the step-by-step Composio Platform UI walkthrough.
 
 ## License
 

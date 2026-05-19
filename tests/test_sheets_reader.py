@@ -5,7 +5,7 @@ import pandas as pd
 
 from scripts.sheets_reader import (
     column_letter_to_index,
-    fetch_workbook_via_rube,
+    fetch_workbook,
     normalize_row,
     normalize_workbook,
     parse_duration,
@@ -127,10 +127,10 @@ def test_normalize_workbook(sample_sheet_data, default_config):
     assert "duration_missing" in ofir_14.iloc[0]["issues"]
 
 
-# --- F: fetch_workbook_via_rube ------------------------------------------------
+# --- F: fetch_workbook ---------------------------------------------------------
 
 
-def test_fetch_workbook_via_rube_passes_correct_ranges():
+def test_fetch_workbook_passes_correct_ranges():
     mock_client = MagicMock()
     mock_client.execute_tool.return_value = {
         "valueRanges": [
@@ -138,7 +138,7 @@ def test_fetch_workbook_via_rube_passes_correct_ranges():
             {"values": [["row2"]]},
         ]
     }
-    result = fetch_workbook_via_rube("SHEET_ID", ["אופיר", "אביב"], mock_client)
+    result = fetch_workbook("SHEET_ID", ["אופיר", "אביב"], mock_client)
     mock_client.execute_tool.assert_called_once_with(
         "GOOGLESHEETS_BATCH_GET",
         {"spreadsheetId": "SHEET_ID", "ranges": ["אופיר!A1:L1000", "אביב!A1:L1000"]},

@@ -1,4 +1,4 @@
-"""Send the rendered report via Gmail through Rube/Composio."""
+"""Send the rendered report via Gmail through the Composio Platform."""
 from __future__ import annotations
 
 import base64
@@ -44,7 +44,7 @@ def build_mime_message(
 
 
 def send_report(
-    rube_client: Any,
+    composio_client: Any,
     sender: str,
     recipient: str,
     cc: list[str],
@@ -54,13 +54,13 @@ def send_report(
     pdf_filename: str,
     max_retries: int = 3,
 ) -> dict[str, Any]:
-    """Send the report through Rube's Gmail tool with retries on transient failure."""
+    """Send the report through the Composio Gmail tool with retries on transient failure."""
     raw = build_mime_message(sender, recipient, cc, subject, html, pdf_bytes, pdf_filename)
 
     last_error: Exception | None = None
     for attempt in range(1, max_retries + 1):
         try:
-            return rube_client.execute_tool("GMAIL_SEND_EMAIL", {"raw": raw})
+            return composio_client.execute_tool("GMAIL_SEND_EMAIL", {"raw": raw})
         except Exception as exc:  # noqa: BLE001
             last_error = exc
             if attempt < max_retries:

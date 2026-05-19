@@ -147,17 +147,18 @@ def normalize_workbook(tabs: dict[str, list[list[Any]]], config: dict[str, Any])
     return pd.DataFrame(records)
 
 
-def fetch_workbook_via_rube(
+def fetch_workbook(
     spreadsheet_id: str,
     tab_names: list[str],
-    rube_client: Any,
+    composio_client: Any,
 ) -> dict[str, list[list[Any]]]:
-    """Fetch a Google Sheets workbook through Rube/Composio.
+    """Fetch a Google Sheets workbook through the Composio Platform.
 
     Args:
         spreadsheet_id: The Google Sheet ID.
         tab_names: Employee tab names to read.
-        rube_client: An object exposing `.execute_tool(slug, params)` (injected for testability).
+        composio_client: An object exposing `.execute_tool(slug, params)`
+            (injected for testability). A thin adapter around the Composio SDK.
 
     Returns:
         Dict mapping tab name -> 2D list of raw cell values.
@@ -165,7 +166,7 @@ def fetch_workbook_via_rube(
     The slug used is `GOOGLESHEETS_BATCH_GET` which accepts a `ranges` list.
     """
     ranges = [f"{tab}!A1:L1000" for tab in tab_names]
-    result = rube_client.execute_tool(
+    result = composio_client.execute_tool(
         "GOOGLESHEETS_BATCH_GET",
         {"spreadsheetId": spreadsheet_id, "ranges": ranges},
     )

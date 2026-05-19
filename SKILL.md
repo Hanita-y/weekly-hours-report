@@ -1,6 +1,6 @@
 ---
 name: weekly-hours-report
-description: Weekly automated employee hours report. Reads a Hebrew Google Sheets workbook with one tab per employee, aggregates the prior week's data, detects anomalies (missing data, schedule gaps, over/under reporting), and emails an HTML + PDF report every Sunday 08:00 Israel time. Setup uses Rube/Composio for OAuth and scheduling.
+description: Weekly automated employee hours report. Reads a Hebrew Google Sheets workbook with one tab per employee, aggregates the prior week's data, detects anomalies (missing data, schedule gaps, over/under reporting), and emails an HTML + PDF report every Sunday 08:00 Israel time. Setup uses Composio for OAuth (Google Sheets + Gmail). Scheduling runs via GitHub Actions cron.
 ---
 
 # Weekly Hours Report
@@ -9,18 +9,23 @@ Use this skill when a user wants to set up automated weekly time-tracking report
 
 ## Setup
 
-Run `python scripts/setup.py` from the skill folder. It will:
+1. Sign up at https://composio.dev and create Auth Configs for **Google Sheets** and **Gmail**, then connect a Google account to each.
+2. Generate a Composio API key and export it: `export COMPOSIO_API_KEY=...`
+3. Run `python scripts/setup.py` from the skill folder. It will:
+   - Verify `COMPOSIO_API_KEY` is set.
+   - Prompt for the sheet ID, employee tab names, recipient email, and schedule.
+   - Write `config.json`.
+   - Optionally send a test report immediately.
 
-1. Verify Rube (rube.app) is connected.
-2. OAuth-connect Google Sheets and Gmail through Rube.
-3. Prompt for the sheet ID, employee tab names, recipient email, and schedule.
-4. Write `config.json`.
-5. Create a Composio recipe and register the Sunday-08:00 cron.
-6. Optionally send a test report immediately.
+Full step-by-step guide with screenshots: [docs/setup-guide-he.md](docs/setup-guide-he.md).
 
 ## Manual report
 
 Run `python scripts/generate_report.py` to send the current week's report on demand.
+
+## Weekly cron
+
+Scheduling is handled by **GitHub Actions** (not Composio). Fork the repo, add Repository Secrets (`COMPOSIO_API_KEY`, `SHEET_ID`, `EMPLOYEE_TABS`, `RECIPIENT_EMAIL`, optionally `CC_EMAILS`), and `.github/workflows/weekly-report.yml` will run the report every Sunday 08:00 IL.
 
 ## Files
 
@@ -28,10 +33,12 @@ Run `python scripts/generate_report.py` to send the current week's report on dem
 - `scripts/` — pipeline modules.
 - `templates/` — Jinja2 HTML + CSS for email and PDF.
 - `tests/` — pytest suite, fixture-based.
-- `docs/setup-guide-he.md` — step-by-step setup guide in Hebrew.
+- `.github/workflows/weekly-report.yml` — weekly cron on GitHub Actions.
+- `docs/setup-guide-he.md` — step-by-step setup guide in Hebrew with Composio screenshots.
 
 ## Requires
 
 - Python 3.11+
-- Rube/Composio account (https://rube.app)
+- Composio Platform account (https://composio.dev) with Auth Configs connected for Google Sheets + Gmail
 - Google account with access to the target Sheets workbook
+- (For weekly cron) GitHub account with the repo forked
