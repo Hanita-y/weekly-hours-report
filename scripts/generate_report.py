@@ -91,10 +91,50 @@ def load_config_from_env() -> dict:
     return cfg
 
 
+def _discover_user_id(client) -> str:
+    """Find the user_id whose Composio account has BOTH googlesheets AND gmail connected.
+
+    Returns the user_id. Raises a clear RuntimeError if no such user is found.
+    """
+    accounts = client.connected_accounts.list()
+    items = accounts.items if hasattr(accounts, "items") else accounts
+
+    user_toolkits: dict[str, set[str]] = {}
+    for a in items:
+        user_id = getattr(a, "user_id", None)
+        toolkit = getattr(a, "toolkit", None)
+        toolkit_slug = getattr(toolkit, "slug", None) if toolkit else None
+        status = getattr(a, "status", None)
+        if not user_id or not toolkit_slug or status != "ACTIVE":
+            continue
+        user_toolkits.setdefault(user_id, set()).add(toolkit_slug)
+
+    candidates = [
+        uid for uid, kits in user_toolkits.items()
+        if "googlesheets" in kits and "gmail" in kits
+    ]
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        raise RuntimeError(
+            "No Composio user found with BOTH Google Sheets and Gmail connections. "
+            "Set up both Auth Configs at https://platform.composio.dev/auth-configs "
+            "and click 'Connect Account' on each. Then set COMPOSIO_USER_ID env var "
+            "explicitly, or re-run after connecting."
+        )
+    raise RuntimeError(
+        f"Multiple Composio users have both connections: {candidates}. "
+        f"Set COMPOSIO_USER_ID env var explicitly to pick one."
+    )
+
+
 def get_composio_client():
     """Construct the Composio client for use in this run.
 
     The Composio Python SDK is initialized using the COMPOSIO_API_KEY env var.
+    The COMPOSIO_USER_ID env var is optional — if not set (or set to "default"),
+    the user_id is auto-discovered from connected accounts that have BOTH
+    Google Sheets and Gmail toolkits active.
     """
     from composio import Composio  # type: ignore
 
@@ -106,15 +146,25 @@ def get_composio_client():
         )
 
     client = Composio(api_key=api_key)
+    user_id = os.environ.get("COMPOSIO_USER_ID")
+    if not user_id or user_id == "default":
+        user_id = _discover_user_id(client)
+        log.info("Auto-discovered Composio user_id: %s", user_id)
 
     class _Adapter:
-        def __init__(self, c):
+        def __init__(self, c, user_id):
             self._c = c
+            self._user_id = user_id
 
         def execute_tool(self, slug: str, params: dict):
-            return self._c.actions.execute(action=slug, params=params)
+            return self._c.tools.execute(
+                slug,
+                params,
+                user_id=self._user_id,
+                dangerously_skip_version_check=True,
+            )
 
-    return _Adapter(client)
+    return _Adapter(client, user_id)
 
 
 def main() -> int:
@@ -160,7 +210,10 @@ def main() -> int:
             pdf_bytes=pdf,
             pdf_filename=filename,
         )
-        log.info("Sent message id=%s", result.get("id"))
+        msg_id = (result.get("data") or {}).get("id") if isinstance(result, dict) else None
+        log.info("Sent message id=%s", msg_id)
+        if isinstance(result, dict) and result.get("successful") is False:
+            log.warning("Composio reported successful=False: %s", result.get("error"))
         return 0
 
     except Exception:  # noqa: BLE001
@@ -176,21 +229,19 @@ def main() -> int:
 def _send_failure_notice(config: dict, tb: str, today: date) -> None:
     """Best-effort: notify the recipient that the report run failed."""
     composio = get_composio_client()
-    from scripts.mailer import build_mime_message
     html = (
         "<p dir='rtl'>הדוח השבועי לא נשלח עקב שגיאה.</p>"
         f"<pre>{tb}</pre>"
     )
-    raw = build_mime_message(
-        sender=config["email"]["recipient"],
-        recipient=config["email"]["recipient"],
-        cc=[],
-        subject=f"דוח שבועי נכשל — {today.strftime('%d.%m.%y')}",
-        html=html,
-        pdf_bytes=b"",  # no attachment for failure notice
-        pdf_filename="failure.pdf",
+    composio.execute_tool(
+        "GMAIL_SEND_EMAIL",
+        {
+            "recipient_email": config["email"]["recipient"],
+            "subject": f"דוח שבועי נכשל — {today.strftime('%d.%m.%y')}",
+            "body": html,
+            "is_html": True,
+        },
     )
-    composio.execute_tool("GMAIL_SEND_EMAIL", {"raw": raw})
 
 
 if __name__ == "__main__":
