@@ -24,6 +24,13 @@ To enable the weekly cron, fork the repo and add the following Repository Secret
 - `EMPLOYEE_TABS` (JSON array string, e.g. `["Ofir","Aviv"]`)
 - `RECIPIENT_EMAIL`
 - `CC_EMAILS` (optional, comma-separated)
+- `COMPOSIO_USER_ID` (optional — auto-discovered from connected accounts if not set)
+
+To run the report manually (from the skill root):
+
+```bash
+python -m scripts.generate_report
+```
 
 See [README.md](README.md) (Hebrew) for full documentation and [docs/setup-guide-he.md](docs/setup-guide-he.md) for the step-by-step Composio Platform UI walkthrough.
 

@@ -1,6 +1,6 @@
 # התאמה אישית
 
-כל הגדרה בקובץ `config.json`. אחרי כל שינוי הריצי `python scripts/generate_report.py` לבדיקה.
+כל הגדרה בקובץ `config.json`. אחרי כל שינוי הריצי `python -m scripts.generate_report` לבדיקה (משורש התיקייה).
 
 ## שינוי מייל יעד
 

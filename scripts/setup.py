@@ -62,8 +62,8 @@ def _print_next_steps() -> None:
     print()
     print("✓ config.json נכתב.")
     print()
-    print("כדי להריץ דוח מקומי כעת:")
-    print("   python scripts/generate_report.py")
+    print("כדי להריץ דוח מקומי כעת (משורש התיקייה):")
+    print("   python -m scripts.generate_report")
     print()
     print("כדי להפעיל cron שבועי, פורקי את הריפו ב-GitHub והוסיפי Repository Secrets:")
     print("   - COMPOSIO_API_KEY")
@@ -71,6 +71,7 @@ def _print_next_steps() -> None:
     print("   - EMPLOYEE_TABS  (מחרוזת JSON, למשל [\"אופיר\",\"אביב\"])")
     print("   - RECIPIENT_EMAIL")
     print("   - CC_EMAILS  (אופציונלי, מופרד בפסיק)")
+    print("   - COMPOSIO_USER_ID  (אופציונלי — אם לא תוסיפי, יתגלה אוטומטית)")
     print()
     print("הקרון ירוץ ראשון 08:00 שעון ישראל אוטומטית דרך GitHub Actions.")
     print("ראי docs/setup-guide-he.md למדריך מלא עם צילומי מסך.")
@@ -80,7 +81,7 @@ def _offer_test_send() -> None:
     ans = _input("\nלשלוח דוח test עכשיו? (y/n)", default="n")
     if ans.lower().startswith("y"):
         import subprocess
-        subprocess.run([sys.executable, "scripts/generate_report.py"], cwd=str(SKILL_ROOT), check=False)
+        subprocess.run([sys.executable, "-m", "scripts.generate_report"], cwd=str(SKILL_ROOT), check=False)
 
 
 def main() -> int:

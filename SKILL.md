@@ -21,11 +21,11 @@ Full step-by-step guide with screenshots: [docs/setup-guide-he.md](docs/setup-gu
 
 ## Manual report
 
-Run `python scripts/generate_report.py` to send the current week's report on demand.
+Run `python -m scripts.generate_report` (from the skill root) to send the current week's report on demand.
 
 ## Weekly cron
 
-Scheduling is handled by **GitHub Actions** (not Composio). Fork the repo, add Repository Secrets (`COMPOSIO_API_KEY`, `SHEET_ID`, `EMPLOYEE_TABS`, `RECIPIENT_EMAIL`, optionally `CC_EMAILS`), and `.github/workflows/weekly-report.yml` will run the report every Sunday 08:00 IL.
+Scheduling is handled by **GitHub Actions** (not Composio). Fork the repo, add Repository Secrets (`COMPOSIO_API_KEY`, `SHEET_ID`, `EMPLOYEE_TABS`, `RECIPIENT_EMAIL`, optionally `CC_EMAILS`, optionally `COMPOSIO_USER_ID`), and `.github/workflows/weekly-report.yml` will run the report every Sunday 08:00 IL. If `COMPOSIO_USER_ID` is not set, the script auto-discovers it from connected accounts that have both Google Sheets and Gmail toolkits active.
 
 ## Files
 

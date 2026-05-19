@@ -54,6 +54,7 @@ python scripts/setup.py
    - `EMPLOYEE_TABS` (מחרוזת JSON, למשל `["אופיר","אביב"]`)
    - `RECIPIENT_EMAIL`
    - `CC_EMAILS` (אופציונלי, מופרד בפסיק)
+   - `COMPOSIO_USER_ID` (אופציונלי — אם לא תוסיפי, יתגלה אוטומטית מה-Connected Accounts שלך)
 3. ה-workflow `.github/workflows/weekly-report.yml` ירוץ ראשון 08:00 שעון ישראל אוטומטית.
 
 ---
@@ -86,8 +87,10 @@ weekly-hours-report/
 ## הרצה ידנית
 
 ```bash
-python scripts/generate_report.py
+python -m scripts.generate_report   # NOT: python scripts/generate_report.py
 ```
+
+(הריצי תמיד משורש התיקייה של הסקיל, כדי ש-Python ימצא את החבילה.)
 
 ---
 

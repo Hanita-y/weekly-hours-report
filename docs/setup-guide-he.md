@@ -20,6 +20,7 @@
 | 2 | **`SHEET_ID`** | מה-URL של הטבלה — הקטע בין `/d/` ל-`/edit` | בשלב 21 (`setup.py`) + שלב 24 (GitHub Secret) |
 | 3 | **`EMPLOYEE_TABS`** | שמות הטאבים בטבלה, בדיוק כמו שהם (לדוגמה `אופיר, אביב, נועה`) | בשלב 21 (`setup.py`) + שלב 24 (GitHub Secret, כמחרוזת JSON) |
 | 4 | **`RECIPIENT_EMAIL`** | את בוחרת — מי שיקבל את הדוח השבועי | בשלב 21 (`setup.py`) + שלב 24 (GitHub Secret) |
+| 5 | **`COMPOSIO_USER_ID`** | אופציונלי (גילוי אוטומטי) — ה-User ID שהזנת בשלב 16 בעת חיבור החשבון | מתגלה אוטומטית מהחיבורים שלך, אבל אפשר להגדיר ידנית אם יש כמה חשבונות |
 
 **חשבונות שתצטרכי:**
 - ✅ חשבון **Composio** (חינם) — נירשם בשלב 1
@@ -200,8 +201,10 @@ python scripts/setup.py
 אפשר תמיד להריץ ידנית:
 
 ```bash
-python scripts/generate_report.py
+python -m scripts.generate_report
 ```
+
+> 💡 חשוב: הריצי תמיד `python -m scripts.generate_report` (לא `python scripts/generate_report.py`) כדי ש-Python ימצא את החבילה. הריצי תמיד משורש התיקייה של הסקיל.
 
 ---
 
@@ -224,6 +227,7 @@ python scripts/generate_report.py
 | `EMPLOYEE_TABS` | מחרוזת JSON, למשל `["אופיר","אביב","נועה"]` |
 | `RECIPIENT_EMAIL` | כתובת המייל ליעד |
 | `CC_EMAILS` | אופציונלי — מיילים מופרדים בפסיק (אם אין, אל תוסיפי את ה-secret הזה) |
+| `COMPOSIO_USER_ID` | אופציונלי — אם לא תוסיפי, יתגלה אוטומטית מה-Connected Accounts שלך |
 
 ### 25. הפעלה ראשונה / בדיקה
 
