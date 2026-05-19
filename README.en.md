@@ -10,7 +10,7 @@ A Claude Code skill that emails a weekly Hebrew hours report from a Google Sheet
 ## Quick start
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/weekly-hours-report.git ~/.claude/skills/weekly-hours-report
+git clone https://github.com/Hanita-y/weekly-hours-report.git ~/.claude/skills/weekly-hours-report
 cd ~/.claude/skills/weekly-hours-report
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt

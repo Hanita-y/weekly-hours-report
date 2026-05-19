@@ -22,7 +22,7 @@
 ## 3. הורדת הסקיל
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/weekly-hours-report.git ~/.claude/skills/weekly-hours-report
+git clone https://github.com/Hanita-y/weekly-hours-report.git ~/.claude/skills/weekly-hours-report
 cd ~/.claude/skills/weekly-hours-report
 ```
 
