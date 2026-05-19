@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 
 import pandas as pd
 
@@ -74,3 +74,102 @@ def test_top_tasks_by_duration(sample_sheet_data, default_config, reference_week
     assert top[0]["duration"] == timedelta(hours=11)
     assert top[0]["employee"] == "אביב"
     assert top[0]["date"] == date(2026, 4, 14)
+
+
+from scripts.analyzer import detect_missing_data
+
+
+def test_detect_missing_data(sample_sheet_data, default_config, reference_week):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    week_df = filter_to_range(df, *reference_week)
+    missing = detect_missing_data(week_df)
+    # Exactly one row in the reference week has missing duration: אופיר 14.04
+    assert len(missing) == 1
+    assert missing[0]["employee"] == "אופיר"
+    assert missing[0]["date"] == date(2026, 4, 14)
+    assert "duration_missing" in missing[0]["missing_fields"]
+
+
+from scripts.analyzer import detect_missing_days
+
+
+def test_detect_missing_days(sample_sheet_data, default_config, reference_week):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    week_df = filter_to_range(df, *reference_week)
+    missing_days = detect_missing_days(
+        week_df,
+        start=reference_week[0],
+        end=reference_week[1],
+        workdays=default_config["workdays"],
+        employees=default_config["sheet"]["employee_tabs"],
+    )
+    # אביב has no entry on Wed 15.04
+    aviv_misses = [m for m in missing_days if m["employee"] == "אביב"]
+    assert any(m["date"] == date(2026, 4, 15) for m in aviv_misses)
+    # אופיר reported every workday in the week → no entries
+    ofir_misses = [m for m in missing_days if m["employee"] == "אופיר"]
+    assert ofir_misses == []
+
+
+from scripts.analyzer import detect_long_tasks
+
+
+def test_detect_long_tasks(sample_sheet_data, default_config, reference_week):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    week_df = filter_to_range(df, *reference_week)
+    long_tasks = detect_long_tasks(week_df, threshold_hours=3)
+    employees_dates = {(t["employee"], t["date"]) for t in long_tasks}
+    assert ("אופיר", date(2026, 4, 13)) in employees_dates
+    assert ("אביב", date(2026, 4, 14)) in employees_dates
+    # 03:00 is NOT > 3h (strict greater-than)
+    assert ("אופיר", date(2026, 4, 12)) not in employees_dates
+
+
+from scripts.analyzer import detect_under_over_reporting
+
+
+def test_detect_under_over_reporting(sample_sheet_data, default_config, reference_week):
+    from scripts.sheets_reader import normalize_workbook
+    df = normalize_workbook(sample_sheet_data["tabs"], default_config)
+    week_df = filter_to_range(df, *reference_week)
+    under, over = detect_under_over_reporting(
+        week_df,
+        under_threshold_hours=6,
+        over_threshold_hours=10,
+        workdays=default_config["workdays"],
+    )
+    # אופיר 15.04 total = 02:00 (under)
+    # אופיר 16.04 total = 00:30 (under)
+    # אביב 14.04 total = 11:00 (over)
+    under_pairs = {(u["employee"], u["date"]) for u in under}
+    over_pairs = {(o["employee"], o["date"]) for o in over}
+    assert ("אופיר", date(2026, 4, 15)) in under_pairs
+    assert ("אופיר", date(2026, 4, 16)) in under_pairs
+    assert ("אביב", date(2026, 4, 14)) in over_pairs
+
+
+from scripts.analyzer import detect_schedule_gaps
+
+
+def test_detect_schedule_gaps():
+    # Build a small DataFrame by hand
+    df = pd.DataFrame([
+        {"employee": "אופיר", "date": date(2026, 4, 12),
+         "from_time": time(9, 0), "to_time": time(10, 0),
+         "duration": timedelta(hours=1), "issues": []},
+        {"employee": "אופיר", "date": date(2026, 4, 12),
+         "from_time": time(11, 0), "to_time": time(12, 0),
+         "duration": timedelta(hours=1), "issues": []},
+        {"employee": "אופיר", "date": date(2026, 4, 12),
+         "from_time": time(12, 5), "to_time": time(13, 0),
+         "duration": timedelta(minutes=55), "issues": []},
+    ])
+    gaps = detect_schedule_gaps(df, threshold_minutes=30)
+    # Gap 10:00 → 11:00 = 60 minutes > 30 → reported
+    # Gap 12:00 → 12:05 = 5 minutes < 30 → not reported
+    assert len(gaps) == 1
+    assert gaps[0]["gap_start"] == time(10, 0)
+    assert gaps[0]["gap_end"] == time(11, 0)
