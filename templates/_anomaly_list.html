@@ -1,0 +1,10 @@
+{% if items %}
+<div class="anomaly-group">
+  <h3>{{ title }} ({{ items|length }})</h3>
+  <ul>
+    {% for item in items %}
+    <li>{{ item|safe }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}

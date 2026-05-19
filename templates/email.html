@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ subject }}</title>
+  <style>{{ css|safe }}</style>
+</head>
+<body>
+  <h1>דוח שעות שבועי</h1>
+  <p class="subtitle">
+    <span class="num">{{ date_range.start_str }}</span> – <span class="num">{{ date_range.end_str }}</span>
+  </p>
+  <hr class="divider">
+
+  <h2>סה"כ השבוע</h2>
+  <hr class="divider">
+  <div class="summary">
+    <div><span class="big num">{{ wow.this_week.total_hours_str }}</span> שעות</div>
+    <div><span class="num">{{ wow.this_week.total_tasks }}</span> פעולות</div>
+    <div class="{{ wow.delta.hours_class }}">
+      <span class="num">{{ wow.delta.hours_pct_str }}</span> מהשבוע הקודם
+    </div>
+  </div>
+
+  <h2>לפי עובד</h2>
+  <hr class="divider">
+  {% with headers=["עובד","שעות","שבוע קודם"], rows=tables.per_employee %}
+    {% include "_table.html" %}
+  {% endwith %}
+
+  <h2>לפי לקוח</h2>
+  <hr class="divider">
+  {% with headers=["לקוח","שעות","% מהזמן"], rows=tables.per_client %}
+    {% include "_table.html" %}
+  {% endwith %}
+
+  <h2>פעולות שלקחו הכי זמן</h2>
+  <hr class="divider">
+  <ol class="ranked">
+    {% for task in top_tasks %}
+    <li>{{ task.task }} — {{ task.client }} ({{ task.employee }}) — <span class="num">{{ task.duration_str }}</span></li>
+    {% endfor %}
+  </ol>
+
+  <h2>חריגות לתשומת לב</h2>
+  <hr class="divider">
+
+  {% with title="מידע חסר", items=anomaly_lines.missing_data %}
+    {% include "_anomaly_list.html" %}
+  {% endwith %}
+  {% with title="ימים ללא דיווח", items=anomaly_lines.missing_days %}
+    {% include "_anomaly_list.html" %}
+  {% endwith %}
+  {% with title="פעולות ארוכות מ-3 שעות", items=anomaly_lines.long_tasks %}
+    {% include "_anomaly_list.html" %}
+  {% endwith %}
+  {% with title="דיווח נמוך מ-6 שעות ביום", items=anomaly_lines.under_reporting %}
+    {% include "_anomaly_list.html" %}
+  {% endwith %}
+  {% with title="דיווח גבוה מ-10 שעות ביום", items=anomaly_lines.over_reporting %}
+    {% include "_anomaly_list.html" %}
+  {% endwith %}
+  {% with title="פערים בלוח הזמנים", items=anomaly_lines.schedule_gaps %}
+    {% include "_anomaly_list.html" %}
+  {% endwith %}
+
+  <p class="attachment-notice">דוח מלא מצורף כ-PDF</p>
+  <hr class="divider">
+
+  <div class="footer">
+    <div>{{ branding.footer_text }}</div>
+    <div><span class="num">{{ generated_at }}</span></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700&display=swap');
+
+body {
+  font-family: 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
+  direction: rtl;
+  text-align: right;
+  color: #1a1a1a;
+  background: #ffffff;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+h1 {
+  font-weight: 300;
+  font-size: 28px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #555;
+  margin: 0 0 16px;
+  font-size: 15px;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: 18px;
+  text-align: center;
+  margin: 40px 0 8px;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #e0e0e0;
+  width: 80px;
+  margin: 16px auto;
+}
+
+.summary {
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.summary .big {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.summary .delta-positive { color: #1a7f4c; }
+.summary .delta-negative { color: #b3261e; }
+.summary .delta-neutral { color: #555; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px 12px;
+  text-align: right;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+th {
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.num {
+  unicode-bidi: embed;
+  direction: ltr;
+  display: inline-block;
+}
+
+ol.ranked {
+  padding-right: 24px;
+}
+
+ol.ranked li {
+  margin: 6px 0;
+}
+
+.anomaly-group {
+  margin: 16px 0;
+}
+
+.anomaly-group h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+
+.anomaly-group ul {
+  padding-right: 18px;
+  margin: 0;
+}
+
+.anomaly-group li {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.footer {
+  text-align: center;
+  font-size: 12px;
+  color: #888;
+  margin-top: 48px;
+}
+
+.attachment-notice {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin: 32px 0 16px;
+}
+
+@page {
+  size: A4 portrait;
+  margin: 2.5cm;
+}
