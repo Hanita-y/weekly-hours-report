@@ -1,0 +1,37 @@
+{
+  "sheet": {
+    "spreadsheet_id": "YOUR_GOOGLE_SHEET_ID_HERE",
+    "employee_tabs": ["שם עובד 1", "שם עובד 2"],
+    "data_start_row": 4,
+    "columns": {
+      "date": "L",
+      "client": "K",
+      "task": "J",
+      "from_time": "I",
+      "to_time": "H",
+      "duration": "G",
+      "notes": "F"
+    },
+    "date_format": "DD.MM.YY"
+  },
+  "email": {
+    "recipient": "your-email@example.com",
+    "cc": [],
+    "subject_template": "דוח שעות שבועי | {date_range} | {total_hours}"
+  },
+  "schedule": {
+    "cron": "0 8 * * 0",
+    "timezone": "Asia/Jerusalem",
+    "comment": "ראשון 08:00 שעון ישראל"
+  },
+  "anomaly_thresholds": {
+    "long_task_hours": 3,
+    "schedule_gap_minutes": 30,
+    "underreporting_daily_hours": 6,
+    "overreporting_daily_hours": 10
+  },
+  "workdays": ["sunday", "monday", "tuesday", "wednesday", "thursday"],
+  "branding": {
+    "footer_text": "Hours Tracker · אוטומציה שבועית"
+  }
+}
