@@ -1,46 +1,18 @@
-"""Send the rendered report via Gmail through the Composio Platform."""
+"""Send the rendered report via Gmail through the Composio Platform.
+
+Composio's GMAIL_SEND_EMAIL tool uses structured params (recipient_email, subject,
+body, is_html, cc) rather than a raw MIME envelope. PDF attachments require a
+separate upload step to Composio's storage — not implemented here yet; the
+HTML body already contains the full report.
+"""
 from __future__ import annotations
 
-import base64
 import time
-from email import encoders
-from email.mime.base import MIMEBase
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from typing import Any
 
 
 class MailerError(Exception):
     """Raised when Gmail send fails after retries."""
-
-
-def build_mime_message(
-    sender: str,
-    recipient: str,
-    cc: list[str],
-    subject: str,
-    html: str,
-    pdf_bytes: bytes,
-    pdf_filename: str,
-) -> str:
-    """Build an RFC 2822 multipart message and return it base64url-encoded for Gmail API."""
-    msg = MIMEMultipart("mixed")
-    msg["To"] = recipient
-    msg["From"] = sender
-    msg["Subject"] = subject
-    if cc:
-        msg["Cc"] = ", ".join(cc)
-
-    msg.attach(MIMEText(html, "html", "utf-8"))
-
-    attachment = MIMEBase("application", "pdf")
-    attachment.set_payload(pdf_bytes)
-    encoders.encode_base64(attachment)
-    attachment.add_header("Content-Disposition", f'attachment; filename="{pdf_filename}"')
-    msg.attach(attachment)
-
-    raw_bytes = msg.as_bytes()
-    return base64.urlsafe_b64encode(raw_bytes).decode("ascii")
 
 
 def send_report(
@@ -54,13 +26,25 @@ def send_report(
     pdf_filename: str,
     max_retries: int = 3,
 ) -> dict[str, Any]:
-    """Send the report through the Composio Gmail tool with retries on transient failure."""
-    raw = build_mime_message(sender, recipient, cc, subject, html, pdf_bytes, pdf_filename)
+    """Send the report through the Composio Gmail tool with retries on transient failure.
+
+    Note: pdf_bytes / pdf_filename are accepted for interface stability but currently
+    not attached. Composio's Gmail tool requires attachments uploaded via S3 first.
+    The HTML body contains the full report, so PDF is supplementary.
+    """
+    params: dict[str, Any] = {
+        "recipient_email": recipient,
+        "subject": subject,
+        "body": html,
+        "is_html": True,
+    }
+    if cc:
+        params["cc"] = cc
 
     last_error: Exception | None = None
     for attempt in range(1, max_retries + 1):
         try:
-            return composio_client.execute_tool("GMAIL_SEND_EMAIL", {"raw": raw})
+            return composio_client.execute_tool("GMAIL_SEND_EMAIL", params)
         except Exception as exc:  # noqa: BLE001
             last_error = exc
             if attempt < max_retries:
